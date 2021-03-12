@@ -24,6 +24,7 @@ gem 'rack-cors', :require => 'rack/cors'
 
 gem 'json'
 gem 'fast_jsonapi'
+gem 'activemerchant'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development

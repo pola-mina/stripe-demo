@@ -6,6 +6,8 @@ Rails.application.routes.draw do
       namespace :v1 do
         namespace :admins do
           mount_devise_token_auth_for 'Admin', at: 'admin_auth', skip: [:registration]
+          resources :products
+          resources :services
         end
       end
     end
@@ -16,7 +18,9 @@ Rails.application.routes.draw do
       namespace :v1 do
         namespace :users do
           mount_devise_token_auth_for 'User', at: 'auth'
-        end
+          resources :account
+          resources :payment_methods
+          end
       end
     end
   end

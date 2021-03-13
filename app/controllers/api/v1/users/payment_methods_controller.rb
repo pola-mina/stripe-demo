@@ -2,6 +2,11 @@ class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiControll
   before_action :set_payment_method, except: %i[index]
 
   def index
+    customer = if current_user.stripe_id?
+      Stripe::Customer.retrieve(current_user.stripe_id)
+    else
+      Stripe::Customer.create(email: current_user.email, source: token)
+    end
     payment_methods = listing_records(@payment_methods, params)
     payment_methods = PaymentMethodSerializer.new(payment_methods, { fields: { payment_method: params[:fields] } })
     render json: { items: payment_methods.serializable_hash[:data], count: @total_count }, status: :ok
@@ -13,8 +18,14 @@ class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiControll
   end
 
   def create
-    credit_card = ActiveMerchant::Billing::CreditCard.new(payment_method_params)
-    @payment_method.author_id = current_admin.id
+    customer = if current_user.stripe_id?
+                 Stripe::Customer.retrieve(current_user.stripe_id)
+               else
+                 new_cus = Stripe::Customer.create(email: current_user.email, source: token)
+                 current_user.update(stripe_id: new_cus.id)
+                 new_cus
+               end
+    byebug
     if @payment_method.save
       render json: PaymentMethodSerializer.new(@payment_method).serializable_hash[:data], status: :ok
     else

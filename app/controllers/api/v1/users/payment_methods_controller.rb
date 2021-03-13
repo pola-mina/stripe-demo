@@ -1,5 +1,5 @@
 class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiController
-  before_action :set_payment_method, except: %i[index]
+  before_action :set_payment_method, except: %i[index create]
 
   def index
     customer = if current_user.stripe_id?
@@ -13,8 +13,8 @@ class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiControll
   end
 
   def show
-    render json: PaymentMethodSerializer.new(@payment_method, { fields: { @payment_method: params[:fields] } }).serializable_hash[:data],
-        status: :ok
+    render json: PaymentMethodSerializer.new(@payment_method, { fields: { payment_method: params[:fields] } }).serializable_hash[:data],
+           status: :ok
   end
 
   def create
@@ -44,7 +44,7 @@ class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiControll
   private
 
   def set_payment_method
-    @payment_method = params[:id].present? ? Article.find_by_id(params[:id]) : Article.new(payment_method_params)
+    @payment_method = Stripe::PaymentMethod.retrieve(params[:payment_method_id])
   end
 
   def payment_method_params

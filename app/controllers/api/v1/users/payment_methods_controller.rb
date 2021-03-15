@@ -18,11 +18,11 @@ class Api::V1::Users::PaymentMethodsController < Api::V1::Users::UserApiControll
   end
 
   def create
-    customer = if current_user.stripe_id?
+    customer = if current_user.cust_gateway_id?
                  Stripe::Customer.retrieve(current_user.stripe_id)
                else
-                 new_cus = Stripe::Customer.create(email: current_user.email, source: token)
-                 current_user.update(stripe_id: new_cus.id)
+                 new_cus = Stripe::Customer.create(email: current_user.email, source: params[:source])
+                 current_user.update(cust_gateway_id: new_cus.id)
                  new_cus
                end
     byebug
